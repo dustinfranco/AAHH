@@ -28,6 +28,15 @@ def createArrayFromStructure(songName):
             print(line + "\n");
         print("z");
         print(z);
+    return z
+def findUniqueMeasures(inputSongStructureArray):
+    uniqueMeasures = {};
+    for measureName in inputSongStructureArray:
+        if(measureName not in uniqueMeasures):
+            print("here")
+            uniqueMeasures[measureName] = [];
+    return uniqueMeasures
+
 
 def compileSong(songName):
     print("compile song not complete");
@@ -60,4 +69,6 @@ def createNewSong(songName, timeSignature = 4):
                 os.utime(newFile, None)
                 x.write("ia,ia,ib,ic\nma,mb,mc,md\n")
 createNewSong("abcd")
-createArrayFromStructure("abcd")
+q = createArrayFromStructure("abcd")
+w = findUniqueMeasures(q)
+print(w)
