@@ -72,6 +72,11 @@ def compileMeasure(songName, measureName):
         string += 1;
     return noteArrayOutput;
 
+def concatMeasure(inputMeasureA, inputMeasureB):
+    for noteArray in inputMeasureB:
+        inputMeasureA.append(noteArray);
+    return inputMeasureA
+
 def editSong(songName):
     print("editSong not comlete");
 
@@ -102,7 +107,11 @@ def createNewSong(songName, timeSignature = 4):
 createNewSong("abcd")
 q = createArrayFromStructure("abcd")
 w = findUniqueMeasures(q)
+m = []
 for measure in w:
-    print(measure)
-    compileMeasure("abcd", measure);
-print(w)
+    w[measure] = compileMeasure("abcd", measure);
+for measure in q:
+    z = w[measure];
+    m = concatMeasure(m, z)
+
+print(m)
