@@ -1,4 +1,6 @@
 import RPi.GPIO as GPIO
+from pinMeta import activePins;
+from pinMeta import allValidPins;
 GPIO.setmode(GPIO.BOARD)
 
 #All pins
@@ -10,12 +12,12 @@ allValidPins = [\
 35,37];
 
 #Pins mapped to guitar notes
-activePinsMap = [\
-12, 8,16, 5,11,10,\
-13,15,19, 3, 7,21,\
-18,26,22,38,40,24,\
-33,36,37,31,35,32,
- 0, 0, 0, 0, 0, 0];
+activePins = [\
+ 8, 16,12, 5,10,11,\
+13,22,3, 7,15,21,\
+40,18,24,22,38,26,\
+33,35,37,31,32,36,
+ 0, 0, 0, 0, 0, 0]
 
 #Inactive pins:
 inactivePins = [];

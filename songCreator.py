@@ -1,5 +1,7 @@
 import os
+from pinMeta import activePins;
 #basePath = "/home/pi/Desktop/Songs/"
+print (activePins)
 basePath = "/Users/dustinfranco/Desktop/Songs/"
 if not os.path.exists(basePath):
     print("creating songs folder");
@@ -8,7 +10,7 @@ def compileSong(songName):
     print("compile song not complete");
 
 def editSong(songName):
-        print("editSong not comlete");
+    print("editSong not comlete");
 
 def playSong(songName):
     print("playSong not complete");
