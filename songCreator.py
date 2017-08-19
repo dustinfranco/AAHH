@@ -6,6 +6,29 @@ basePath = "/Users/dustinfranco/Desktop/Songs/"
 if not os.path.exists(basePath):
     print("creating songs folder");
     os.makedirs(basePath);
+
+def createArrayFromStructure(songName):
+    songSequencePath = basePath + songName + "/songSequence";
+    if(not os.path.exists(songSequencePath)):
+        return "empty song sequence"
+    else:
+        x = open(songSequencePath, "r");
+        z = [];
+
+        for line in x:
+            y = "";
+            for char in line:
+                if(char == "," or char == "\n"):
+                    z.append(y);
+                    y = "";
+                else:
+                    y += char
+
+
+            print(line + "\n");
+        print("z");
+        print(z);
+
 def compileSong(songName):
     print("compile song not complete");
 
@@ -36,4 +59,5 @@ def createNewSong(songName, timeSignature = 4):
                 x = open(songSequence, "w")
                 os.utime(newFile, None)
                 x.write("ia,ia,ib,ic\nma,mb,mc,md\n")
-               
+createNewSong("abcd")
+createArrayFromStructure("abcd")
