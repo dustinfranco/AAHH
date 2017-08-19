@@ -41,6 +41,37 @@ def findUniqueMeasures(inputSongStructureArray):
 def compileSong(songName):
     print("compile song not complete");
 
+def compileAllMeasures(songName):
+    print("compile all mesures not complete")
+
+def compileMeasure(songName, measureName):
+    print("compiling " + songName + " measure " + measureName)
+    measureString = open(basePath + songName + "/" + measureName)
+    string = 0;
+    noteArrayOutput = [];
+    print ("THIS: " + str(len(activePins)))
+    stringOffset = [0,5,10,15,20,25];
+    for line in measureString:
+        subindex = 0;
+        for x in range(0,len(line)-1,2):
+            tempNote = line[x] + line[x+1];
+            if(string == 0):
+                if(tempNote != "||"):
+                    noteArrayOutput.append([0]);
+                    noteArrayOutput.append([0]);
+            if(tempNote != "||" and tempNote != "--"):
+                #thebest
+                tempTempNote = int(tempNote);
+                tempTempNote = string + tempTempNote * 6;
+                print("tempnote value " + str(tempTempNote))
+                tempTempNote = activePins[tempTempNote];
+                noteArrayOutput[subindex].append(tempTempNote);
+                noteArrayOutput[subindex + 1].append(tempTempNote);
+            if(tempNote != "||"):
+                subindex += 2
+        string += 1;
+    return noteArrayOutput;
+
 def editSong(songName):
     print("editSong not comlete");
 
@@ -71,4 +102,7 @@ def createNewSong(songName, timeSignature = 4):
 createNewSong("abcd")
 q = createArrayFromStructure("abcd")
 w = findUniqueMeasures(q)
+for measure in w:
+    print(measure)
+    compileMeasure("abcd", measure);
 print(w)
