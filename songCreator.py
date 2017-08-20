@@ -1,9 +1,12 @@
 import os
+import time
 from pinMeta import activePins;
 from pinMeta import hardwareNumberTable;
-#basePath = "/home/pi/Desktop/Songs/"
+from subprocess import Popen, PIPE
+
+basePath = "/home/pi/Desktop/Songs/"
 print (activePins)
-basePath = "/Users/dustinfranco/Desktop/Songs/"
+#basePath = "/Users/dustinfranco/Desktop/Songs/"
 if not os.path.exists(basePath):
     print("creating songs folder");
     os.makedirs(basePath);
@@ -132,13 +135,19 @@ def createNewSong(songName, timeSignature = 4):
                 os.utime(newFile, None)
                 x.write("ia,ia,ib,ic\nma,mb,mc,md\n")
 createNewSong("abcd")
-q = createArrayFromStructure("abcd")
-w = findUniqueMeasures(q)
-m = []
-for measure in w:
-    w[measure] = compileMeasure("abcd", measure);
-for measure in q:
-    z = w[measure];
-    m = concatMeasure(m, z)
-saveNoteArrayToFile(m, "abcd")
-print(m)
+
+while(1):
+    q = createArrayFromStructure("abcd")
+    w = findUniqueMeasures(q)
+    m = []
+    for measure in w:
+        w[measure] = compileMeasure("abcd", measure);
+    for measure in q:
+        z = w[measure];
+        m = concatMeasure(m, z)
+    saveNoteArrayToFile(m, "abcd")
+    print(m)
+    cmd = ["/home/pi/Desktop/AAHHgit/rpi_gpio_example", ""]
+    Popen(cmd, stdout = PIPE);
+    input("play again?")
+    
