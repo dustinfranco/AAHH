@@ -1,5 +1,6 @@
 import os
 from pinMeta import activePins;
+from pinMeta import hardwareNumberTable;
 #basePath = "/home/pi/Desktop/Songs/"
 print (activePins)
 basePath = "/Users/dustinfranco/Desktop/Songs/"
@@ -64,9 +65,9 @@ def compileMeasure(songName, measureName):
                 tempTempNote = int(tempNote);
                 tempTempNote = string + tempTempNote * 6;
                 print("tempnote value " + str(tempTempNote))
-                tempTempNote = activePins[tempTempNote];
-                noteArrayOutput[subindex].append(tempTempNote);
-                noteArrayOutput[subindex + 1].append(tempTempNote);
+                tempTempNote = hardwareNumberTable[activePins[tempTempNote]];
+                noteArrayOutput[subindex] = [tempTempNote] + noteArrayOutput[subindex];
+                noteArrayOutput[subindex + 1] = [tempTempNote] + noteArrayOutput[subindex + 1];
             if(tempNote != "||"):
                 subindex += 2
         string += 1;
@@ -76,6 +77,32 @@ def concatMeasure(inputMeasureA, inputMeasureB):
     for noteArray in inputMeasureB:
         inputMeasureA.append(noteArray);
     return inputMeasureA
+
+def saveNoteArrayToFile(inputNoteArray, songName, sectionName = "temp", timeSignature = 4):
+    newFile = basePath + songName + "/compiledSections/" + sectionName
+    #lol
+    noteCount = 0;
+    noteMax = 1 + timeSignature * 8;
+    if(not os.path.exists(basePath + songName + "/compiledSections/" )):
+        print("creating that shit")
+        os.makedirs(basePath + songName + "/compiledSections/" );
+    else:
+        print("shit created")
+    x = open(newFile, "w+");
+    print(inputNoteArray)
+    for subArray in inputNoteArray:
+        for note in subArray:
+            if(note > 0):
+                x.write(str(note) + " ")
+            else:
+                noteCount +=1
+                x.write("0" + "\n")
+                if(noteCount == noteMax):
+                    noteCount = 0;
+                    x.write("\r\n")
+
+
+
 
 def editSong(songName):
     print("editSong not comlete");
@@ -113,5 +140,5 @@ for measure in w:
 for measure in q:
     z = w[measure];
     m = concatMeasure(m, z)
-
+saveNoteArrayToFile(m, "abcd")
 print(m)
