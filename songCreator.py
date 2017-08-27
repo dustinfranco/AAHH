@@ -1,5 +1,6 @@
 import os
 import time
+import copy
 from pinMeta import activePins;
 from pinMeta import hardwareNumberTable;
 from subprocess import Popen, PIPE
@@ -27,17 +28,12 @@ def createArrayFromStructure(songName):
                     y = "";
                 else:
                     y += char
-
-
-            print(line + "\n");
-        print("z");
-        print(z);
     return z
+
 def findUniqueMeasures(inputSongStructureArray):
     uniqueMeasures = {};
     for measureName in inputSongStructureArray:
         if(measureName not in uniqueMeasures):
-            print("here")
             uniqueMeasures[measureName] = [];
     return uniqueMeasures
 
@@ -51,30 +47,45 @@ def compileAllMeasures(songName):
 def compileMeasure(songName, measureName):
     print("compiling " + songName + " measure " + measureName)
     measureString = open(basePath + songName + "/" + measureName)
-    string = 0;
+    string = -1;
     noteArrayOutput = [];
-    print ("THIS: " + str(len(activePins)))
     stringOffset = [0,5,10,15,20,25];
     for line in measureString:
-        subindex = 0;
-        for x in range(0,len(line)-1,2):
-            tempNote = line[x] + line[x+1];
-            if(string == 0):
+        if(string == -1):
+            noteArrayOutput.append([int(line)]);
+            noteArrayOutput[0].append(0);
+        else:
+            subindex = 0;
+            for x in range(0,len(line)-1,2):
+                tempNote = line[x] + line[x+1];
+                if(string == 0):
+                    if(tempNote != "||"):
+                        noteArrayOutput.append([0]);
+                        noteArrayOutput.append([0]);
+                if(tempNote != "||" and tempNote != "--"):
+                    #thebest
+                    tempTempNote = int(tempNote);
+                    tempTempNote = string + tempTempNote * 6;
+                    tempTempNote = hardwareNumberTable[activePins[tempTempNote]];
+                    noteArrayOutput[subindex] = [tempTempNote] + noteArrayOutput[subindex];
+                    noteArrayOutput[subindex + 1] = [tempTempNote] + noteArrayOutput[subindex + 1];
                 if(tempNote != "||"):
-                    noteArrayOutput.append([0]);
-                    noteArrayOutput.append([0]);
-            if(tempNote != "||" and tempNote != "--"):
-                #thebest
-                tempTempNote = int(tempNote);
-                tempTempNote = string + tempTempNote * 6;
-                print("tempnote value " + str(tempTempNote))
-                tempTempNote = hardwareNumberTable[activePins[tempTempNote]];
-                noteArrayOutput[subindex] = [tempTempNote] + noteArrayOutput[subindex];
-                noteArrayOutput[subindex + 1] = [tempTempNote] + noteArrayOutput[subindex + 1];
-            if(tempNote != "||"):
-                subindex += 2
+                    subindex += 2
         string += 1;
     return noteArrayOutput;
+
+def optomizeMeasure(inputMeasure, optomize = 1):
+    optomizeNotes = []
+    for subArray in inputMeasure:
+        for note in subArray:
+            if(len(optomizeNotes) == optomize):
+                return inputMeasure
+            if(note):
+                if(note not in optomizeNotes):
+                    subArray.remove(note);
+                    optomizeNotes.append(note);
+                    inputMeasure[0] = [note] + inputMeasure[0]
+    return inputMeasure
 
 def concatMeasure(inputMeasureA, inputMeasureB):
     for noteArray in inputMeasureB:
@@ -92,10 +103,9 @@ def saveNoteArrayToFile(inputNoteArray, songName, sectionName = "temp", timeSign
     else:
         print("shit created")
     x = open(newFile, "w+");
-    print(inputNoteArray)
     for subArray in inputNoteArray:
         for note in subArray:
-            if(note > 0):
+            if(note != 0):
                 x.write(str(note) + " ")
             else:
                 noteCount +=1
@@ -134,20 +144,32 @@ def createNewSong(songName, timeSignature = 4):
                 x = open(songSequence, "w")
                 os.utime(newFile, None)
                 x.write("ia,ia,ib,ic\nma,mb,mc,md\n")
-createNewSong("abcd")
+createNewSong("efgh")
 
 while(1):
-    q = createArrayFromStructure("abcd")
+    q = createArrayFromStructure("efgh")
     w = findUniqueMeasures(q)
     m = []
+    v = []
     for measure in w:
-        w[measure] = compileMeasure("abcd", measure);
+        w[measure] = compileMeasure("efgh", measure);
+        if(measure == "ia"):
+            print(w[measure])
     for measure in q:
         z = w[measure];
-        m = concatMeasure(m, z)
-    saveNoteArrayToFile(m, "abcd")
-    print(m)
-    cmd = ["/home/pi/Desktop/AAHHgit/rpi_gpio_example", ""]
+        #v = concatMeasure(v, z)
+        #m = concatMeasure(m, z)
+        b = copy.deepcopy(z)
+        if(measure == "ia" or measure == "ib"):
+            print(b)
+        b = optomizeMeasure(b, 20);
+        v = concatMeasure(v, b)
+    m = concatMeasure(m,v)
+    
+    saveNoteArrayToFile(m, "efgh")
+    cmd = ["/home/pi/Desktop/AAHHgit/rpi_gpio_example", "efgh"]
+
+    
     Popen(cmd, stdout = PIPE);
     input("play again?")
     
