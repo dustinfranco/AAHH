@@ -6,7 +6,7 @@ GPIO.setmode(GPIO.BOARD)
 #Inactive pins:
 inactivePins = [];
 for pin in allValidPins:
-	if(pin not in activePinsMap):
+	if(pin not in activePins):
 		print(str(pin) + " is inactive");
 
 #Initialize ALL pins as low out:
@@ -21,3 +21,4 @@ def configureAllPinsLow():
     print ('Finished configuring pins');
 
 configureAllPinsLow();
+print("pins set to low");
