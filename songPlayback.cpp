@@ -53,19 +53,32 @@ void toggle(int togglePin){
 		GPIO_SET = 1<<togglePin;
 	}
 }
-void playSong(const char* songName, long bpm){
+void playSong(const char* songName, float bpm){
 	FILE* file = fopen(songName, "r");
-  long sixteenthNoteTime = 15;
-  sixteenthNoteTime = (sixteenthNoteTime / bpm) * 100000000;
+  float sixteenthNoteTime = 7.5;
+  float whatever = sixteenthNoteTime / bpm;
+  printf("HEREaegaewgweag");
+  printf("\n%f\n", whatever);
+  printf("THEREaegaewgweag");
+  sixteenthNoteTime = whatever * 1000000.0;
+  printf("\n%f\n", sixteenthNoteTime);
+  
 	int i = 0;
 	fscanf(file, "%d", &i);
 	while(!feof (file)){
 		//printf("%d\n", i);
 		if(i){
-			toggle(i);
+			if(i < 0){
+				printf("changing\n\r");
+				bpm = -1 * i;
+			    sixteenthNoteTime = 7.5;
+			    whatever = sixteenthNoteTime / bpm;
+				sixteenthNoteTime = whatever * 1000000.0;
+			} else {
+				toggle(i);
+			}
 		} else {
-			long m = 100000;
-			usleep(m);
+			usleep(sixteenthNoteTime);
 		}
 		fscanf(file, "%d", &i);
 	}
@@ -101,7 +114,7 @@ int main(int argc, char **argv)
   
   printf("here");
  
- playSong("/home/pi/Desktop/Songs/abcd/compiledSections/temp", 200);
+ playSong("/home/pi/Desktop/Songs/efgh/compiledSections/temp", 140.0);
  return 0;
  
 } // main
