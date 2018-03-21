@@ -124,32 +124,12 @@ int main() {
     // loop until commanded to shutdown
 
     while( !*exitAddr ) {
-
-
       // send DMX data
-
       success = sendDMX();
-
       if ( !success ) {
-
-	printf  ( "%s: DMX send error\n" , ProgName );
-	*exitAddr++;
+        printf  ( "%s: DMX send error\n" , ProgName );
+        *exitAddr++;
       }
-      
-
-      // wait for update interval
-
-      timeadd ( &next , &next , &delay );
-      gettimeofday ( &now , NULL );
-      timediff ( &diff, &next , &now );
-
-      while (diff.tv_sec || diff.tv_usec) {
-
-	select ( 0, NULL, NULL, NULL, &diff );
-	gettimeofday ( &now, NULL );
-	timediff ( &diff, &next, &now );
-      };		    
-
     }
 
     printf ( "%s: dmx deamon is shutting down\n" , ProgName );
