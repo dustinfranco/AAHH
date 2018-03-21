@@ -161,17 +161,12 @@ int sendDMX ()
   int numChans = *maxChanAddr;
   int x = 0;
   int success = 0;
-#if 1
-
   // find out how many consecutive zeroes are in the data - the start
   // packet can indicate this to avoid sending a bunch of leading
   // zeroes
 
   int curChanIdx = 0;
   
-  for ( curChanIdx = 0; curChanIdx < numChans; curChanIdx++ ) {
-    if ( chanData[ curChanIdx ] != 0 && chanData[curChanIdx] != 2 ) break;
-  }
   //for(x=0; x<8; x++){
 	  //printf("f%d\n",curChanIdx);
 	  // build starting packet. this packet specifies how many channels have
@@ -224,32 +219,6 @@ int sendDMX ()
     printf ( "%s: error sending DMX bulk packet\n" , ProgName );
     return ( 0 );
   }
-  
-
-  if ( curChanIdx >= numChans ) return ( 0 );
-
-#else
-
-  data[0] = 5;   // packet header for single channeld data
-
-  printf ( "sending %d channels\n" , numChans );
-  
-
-  for ( int chIdx = 0; chIdx < numChans; chIdx++ ) 
-    {
-	  printf("%d\n",chIdx);
-      data[1] = chanData [ chIdx ];
-
-      int success = writeUSB ( data , 8 );
-
-      if ( !success ) {
-	printf ( "%s: error sending DMX data packet\n" , ProgName );
-	return ( 0 );
-      }
-    }
-
-#endif  
-
   
   return ( 1 );
 
