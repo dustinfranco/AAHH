@@ -164,7 +164,10 @@ int sendDMX ()
   // find out how many consecutive zeroes are in the data - the start
   // packet can indicate this to avoid sending a bunch of leading
   // zeroes
-
+  if(chanData[59] == 129){
+    return (1);
+  }
+  chanData[59] = 129;
   int curChanIdx = 0;
   
   //for(x=0; x<8; x++){
