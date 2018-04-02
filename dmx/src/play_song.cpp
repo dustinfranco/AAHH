@@ -93,43 +93,54 @@ void delay(int input_time){
 
 void toggle(int togglePin){
 	if(address_value[togglePin] ==130){
+	    //printf("%d off ",togglePin);
 		dmxSetValue(togglePin,1);
 		address_value[togglePin] = 1;
 	} else {   
 		dmxSetValue(togglePin,130);
 		address_value[togglePin] = 130;
+	    //printf("%d on ",togglePin);
 	}
+}
+
+void set(int q){
+	dmxSetValue(q,130);
 }
 
 void playSong(const char* songName, float bpm){
 	FILE* file = fopen(songName, "r");
   float sixteenthNoteTime = 7.5;
   float whatever = sixteenthNoteTime / bpm;
-  printf("\n%f\n", whatever);
-  sixteenthNoteTime = whatever * 1000000.0;
-  printf("\n%f\n", sixteenthNoteTime);
-  
-	int i = 0;
-	fscanf(file, "%d", &i);
-	while(!feof (file)){
-		//printf("%d\n", i);
-		if(i){
-			if(i < 0){
-				printf("changing\n\r");
-				bpm = -1 * i;
-			    sixteenthNoteTime = 7.5;
-			    whatever = sixteenthNoteTime / bpm;
-				sixteenthNoteTime = whatever * 1000000.0;
-			} else {
-				toggle(i);
-			}
-		} else {
-			usleep(sixteenthNoteTime);
-			//usleep(sixteenthNoteTime);
-		}
-		fscanf(file, "%d", &i);
-	}
-	fclose(file);
+  clock_t t;
+  double timeTaken;
+  bool toggled = false;
+  sixteenthNoteTime = whatever * 20000000.0;
+  t=clock();
+  int i = 0;
+  fscanf(file, "%d", &i);
+  while(!feof (file)){
+    if(i){
+      if(i < 0){
+	bpm = -1 * i;
+	sixteenthNoteTime = 7.5;
+        whatever = sixteenthNoteTime / bpm;
+        sixteenthNoteTime = whatever * 1000000.0;
+      } else {
+	toggled = true;
+	toggle(i);
+      }
+    } else {	
+      set(59);			
+      countNegs++;
+      //usleep(sixteenthNoteTime);
+      while(clock() - t < sixteenthNoteTime){};
+      //timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
+      //printf("%f\n", timeTaken);	
+      t = clock();
+    }
+    fscanf(file, "%d", &i);
+  }
+  fclose(file);
 }
  
 
