@@ -1,38 +1,28 @@
+
 // ==========================================================================
-// Velleman K8062 DMX controller Deamon for VM116/K8062
+// Velleman K8062 DMX controller library for VM116/K8062
 // ==========================================================================
-//
-// Modified from code from Denis Moreaux 2008 ( <vapula@endor.be> )
-//
-//
-// This program should be run as a background process and continously updates
-// a shared memory segment created by the application to control DMX channels
-// sent through the DMX controller. The DMX channels can be accessed through
-// a shared memory block that is allocated as:
-//
-// 0     = max # of channels to send  ( 0 - 512 )
-// 1     = exit deamon control flag   ( 0 = run, 1 = exit )
-// 2-514 = dmx channel data
-//
-// ==========================================================================
-//
-// Prerequisites ( USB lib ):
-//   sudo apt-get install libusb-dev
-//
-//
-// ==========================================================================
-//
 
 #include <usb.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <string.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <time.h>
+ 
+#include "dmx.h"
 
+int address_value[60];
+
+// ==========================================================================
+// open the DMX connection
+// ==========================================================================
 
 // dmx data and control registers
 
@@ -54,7 +44,7 @@ int shmid;               // handel to shared memory segment
 #define ProdID   0x8062  // K8062 USB product ID
 
 #define UpdateInt 0 // update interval ( microseconds )
-#define DefMaxChans   60 // default number of maximum channels
+#define maxChans   40 // default number of maximum channels
 
 // internal structures
 
@@ -64,8 +54,6 @@ usb_dev_handle *udev;   // access handle to the K8062 device
 
 
 // function delcarations
-
-int  main();
 
 int sendDMX();
 
@@ -81,75 +69,6 @@ void timediff ( struct timeval *res, struct timeval *a, struct timeval *b );
 void timeadd  ( struct timeval *res, struct timeval *a, struct timeval *b );
 
 
-// ==========================================================================
-// main -- dmx deamon
-// ==========================================================================
-
-int main() {
-
-    struct timeval now,next,diff,delay;
-    int success;
-
-    printf ( "%s: starting dmx deamon\n" , ProgName );
-
-
-    // intialize USB device
-
-    success = initUSB();
-
-    if ( !success ) {
-      printf ( "%s: error initializing USB interface\n" , ProgName );
-      return ( -1 );
-    }
-
-    // initialize shared memory segment
-
-    success = initSHM();
-
-    if ( !success  ) {
-      printf ( "%s: error initializing shared memory\n" , ProgName );
-      return ( -2 );
-    }
-
-
-    // start timer
-
-    delay.tv_sec = 0;
-    delay.tv_usec= UpdateInt;
-
-    gettimeofday ( &next , NULL );
-
-
-
-    // loop until commanded to shutdown
-
-    while( !*exitAddr ) {
-      // send DMX data
-      success = sendDMX();
-      if ( !success ) {
-        printf  ( "%s: DMX send error\n" , ProgName );
-        *exitAddr++;
-      }
-    }
-
-    printf ( "%s: dmx deamon is shutting down\n" , ProgName );
-
-
-    // on shutdown reset all DMX channels
-
-    memset ( chanData , 0, 512 * sizeof (ubyte) );
-
-    sendDMX();
-
-
-    // exit the system
-
-    exitUSB();
-    exitSHM();
-
-    return ( 0 );
-}
-
 
 // ==========================================================================
 // sendDMX -- send current DMX data
@@ -158,71 +77,59 @@ int main() {
 int sendDMX ()
 {
   ubyte data[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  int numChans = *maxChanAddr;
-  int x = 0;
+  int numChans = maxChans;
+  int curChanIdx = 1;
   int success = 0;
   // find out how many consecutive zeroes are in the data - the start
   // packet can indicate this to avoid sending a bunch of leading
   // zeroes
-  if(chanData[59] == 129){
-    return (1);
-  }
-  chanData[59] = 129;
-  int curChanIdx = 0;
-  
   //for(x=0; x<8; x++){
-	  //printf("f%d\n",curChanIdx);
-	  // build starting packet. this packet specifies how many channels have
-	  // zero data from the start and then contains the next 6 channels of 
-	  // data
-	  //printf("chanidx without 0:%d",curChanIdx);
-	  data[0] = 4;                          // start packet header (4)
-	  data[1] = curChanIdx;                 // number of zeroes ( not sent )
-	  
-	  data[2] = chanData [ curChanIdx++ ];  // first ( non-zero ) chan data
-	  data[3] = chanData [ curChanIdx++ ];  // next chan data
-	  data[4] = chanData [ curChanIdx++ ];  // next chan data
-	  data[5] = chanData [ curChanIdx++ ];  // next chan data
-	  data[6] = chanData [ curChanIdx++ ];  // next chan data
-	  data[7] = chanData [ curChanIdx++ ];  // next chan data
-	  success = writeUSB ( data , 8 );
-
-	  if ( !success ) {
-		printf ( "%s: error sending DMX start packet\n" , ProgName );
-		return ( 0 );
-	  }
+    //printf("f%d\n",curChanIdx);
+    // build starting packet. this packet specifies how many channels have
+    // zero data from the start and then contains the next 6 channels of 
+    // data
+    //printf("chanidx without 0:%d",curChanIdx);
+    
+    data[0] = 4;                          // start packet header (4)
+    data[1] = curChanIdx;                 // number of zeroes ( not sent )
+    data[2] = address_value [ curChanIdx++ ];  // first ( non-zero ) chan data
+    data[3] = address_value [ curChanIdx++ ];  // next chan data
+    data[4] = address_value [ curChanIdx++ ];  // next chan data
+    data[5] = address_value [ curChanIdx++ ];  // next chan data
+    data[6] = address_value [ curChanIdx++ ];  // next chan data
+    data[7] = address_value [ curChanIdx++ ];  // next chan data
+    success = writeUSB ( data , 8 );
+    if ( !success ) {
+    printf ( "%s: error sending DMX start packet\n" , ProgName );
+    return ( 0 );
+    }
   //}
 
 
 
 
 
-
-  if ( curChanIdx >= numChans ) return ( 1 );
-
   
 
   // after the first packet additional packets are sent that contain seven
   // channels each up to 512.
  
-  while ( curChanIdx < ( numChans - 7 ) ) {
-    //printf("m%d\n",curChanIdx);  
+  while ( curChanIdx < ( maxChans - 7 ) ) {
     data[0] = 2;                          // start packet header (2)
-    data[1] = chanData [ curChanIdx++ ];  // next chan data
-    data[2] = chanData [ curChanIdx++ ];  // next chan data
-    data[3] = chanData [ curChanIdx++ ];  // next chan data
-    data[4] = chanData [ curChanIdx++ ];  // next chan data
-    data[5] = chanData [ curChanIdx++ ];  // next chan data
-    data[6] = chanData [ curChanIdx++ ];  // next chan data
+    data[1] = address_value [ curChanIdx++ ];  // next chan data
+    data[2] = address_value [ curChanIdx++ ];  // next chan data
+    data[3] = address_value [ curChanIdx++ ];  // next chan data
+    data[4] = address_value [ curChanIdx++ ];  // next chan data
+    data[5] = address_value [ curChanIdx++ ];  // next chan data
+    data[6] = address_value [ curChanIdx++ ];  // next chan data
+    //data[7] = address_value [ curChanIdx++ ];
   success = writeUSB ( data , 8 );
   }
-
 
   if ( !success ) {
     printf ( "%s: error sending DMX bulk packet\n" , ProgName );
     return ( 0 );
   }
-  
   return ( 1 );
 
 }
@@ -262,8 +169,8 @@ int initUSB()
   }
 
   if ( !dev ) {
-	printf ( "%s: DMX device not found on USB\n" , ProgName );      
-	return ( 0 );
+  printf ( "%s: DMX device not found on USB\n" , ProgName );      
+  return ( 0 );
   }
   
 
@@ -313,7 +220,6 @@ int initUSB()
 
   if ( success != 0 ) {
       
-    printf ( "%s: error claiming interface [%d]\n" , success );
     return ( 0 );
   }
 
@@ -327,7 +233,7 @@ int initUSB()
 int writeUSB ( ubyte *data , int numBytes )
 {
   int nSent;
-
+  int x;
   //  printf ( "%s: writing [%d] bytes " , ProgName , numBytes );
   //  for ( int b = 0; b < numBytes; b++ ) printf ( "[%d]" , data[b] );
   //  printf ( "\n" );
@@ -339,10 +245,13 @@ int writeUSB ( ubyte *data , int numBytes )
                                 (char *) data, 
                                 numBytes, 
                                 200 );
-
+  if(false){
+    for(x = 0; x < 8; x++){
+      printf("%u",data[x]);
+      printf("\n");
+    }
+  }
   if ( nSent != numBytes ) {
-      
-    printf ( "%s: error writing [%d] bytes [%d]\n" , numBytes , nSent );
     return ( 0 );
   }
 
@@ -361,95 +270,138 @@ void exitUSB()
 }
 
 // ==========================================================================
-// initSHM -- initialize shared memory segment
+// close the DMX connection
 // ==========================================================================
 
-int initSHM()
+void dmxClose()
 {
-
-  printf ( "%s: creating shared memory segment ... " , ProgName );
-
-
-  // create the shared memory segment
-
-  shmid = shmget ( 0x56444D58 , sizeof ( ubyte ) * 515 , IPC_CREAT | 0666 );
-
-  if ( shmid == -1 ) {
-    printf ( "error creating shared memory segment [%d]\n" , errno );
-    return ( 0 );
-  }
-  else
-    printf ( "ok\n" );
-
-
-  // attach to segment and initialize
-
-
-  printf ( "%s: intitalizing segment [0x%x] ... " , ProgName , shmid );
-
-  shm = ( ubyte * ) shmat ( shmid , NULL , 0 );
-
-  if ( shm == 0x0 ) {
-    printf ( "error connecting to segment [%d]\n" , errno );
-    return ( 0 );
-  }
-  else
-    printf ( "ok\n" );
-
-
-  memset ( shm , 0 , sizeof ( ubyte ) * 515 );
-
-
-  // set up command & data registers
-
-  maxChanAddr  = ( int * ) shm;
-  *maxChanAddr = DefMaxChans;
-
-  exitAddr     = ( ubyte * ) maxChanAddr + 2;
-  chanData     = ( ubyte * ) maxChanAddr + 3;
-
-  return ( 1 );
+  if ( shmid != -1 ) shmdt ( shm );
 }
 
 // ==========================================================================
-// exitSHM -- terminate shared memory segment
+// dmxSetMaxChannels -- set the maximum # of channels to send
 // ==========================================================================
 
-void exitSHM()
+void dmxSetMaxChannels ( int maxChannels )
 {
-    shmdt(shm);
-    shmctl(shmid,IPC_RMID,NULL);
+  *maxChanAddr = maxChannels;
 }
 
 // ==========================================================================
-// timediff | timeadd -- timing functions
+// dmxSetValue -- set the value for a DMX channel
 // ==========================================================================
 
-void timediff ( struct timeval *res, struct timeval *a, struct timeval *b) 
+void dmxSetValue ( ubyte channel , ubyte data )
 {
-    long sec,usec;
-    sec=a->tv_sec-b->tv_sec;
-    usec=a->tv_usec-b->tv_usec;
+  chanData[channel] = data;
+}
 
-    while (usec<0) {
-        usec+=1000000;
-        sec--;
+void delay(int input_time){
+	int i=0;
+	int j=0;
+	for(j=0; j<input_time; j++){
+		for(i=0; i<10000; i++){}
     }
-    if (sec<0) {
-	res->tv_sec=0;
-	res->tv_usec=0;
+}
+
+
+void toggle(int togglePin){
+	if(address_value[togglePin] ==130){
+	    //printf("%d off ",togglePin);
+		address_value[togglePin] = 1;
+	} else {   
+		address_value[togglePin] = 130;
+	    //printf("%d on ",togglePin);
+	}
+}
+
+void set(int q){
+	dmxSetValue(q,130);
+}
+
+void playSong(const char* songName, float bpm){
+  FILE* file = fopen(songName, "r");
+  float sixteenthNoteTime = 7.5;
+  float whatever = sixteenthNoteTime / bpm;
+  clock_t t;
+  float timeTaken = 0.0; 
+  printf("song name: %s\n",songName);
+  sixteenthNoteTime = whatever * 100000.0;
+  t=clock();
+  int i = 0;
+  fscanf(file, "%d", &i);
+  while(!feof (file)){
+    if(i){
+      if(i < 0){
+	bpm = -1 * i;
+	sixteenthNoteTime = 7.5;
+        whatever = sixteenthNoteTime / bpm;
+        sixteenthNoteTime = whatever * 100000.0;
+      } else {
+	toggle(i);
+      }
     } else {
-	res->tv_sec=sec;
-	res->tv_usec=usec;
+      
+      timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
+      printf("th: %f\n", timeTaken);
+      sendDMX();
+      
+      timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
+      printf("ti: %f\n", timeTaken);
+      //usleep(sixteenthNoteTime);
+      if(clock() - t < sixteenthNoteTime){
+	printf("before\n");
+      } else {
+	printf("after\n");
+      }
+      while(clock() - t < sixteenthNoteTime){};
+      timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
+      printf("time: %f\n", timeTaken);	
+      t = clock();
     }
+    fscanf(file, "%d", &i);
+  }
+  fclose(file);
+}
+ 
+
+
+int main(int argc, char *argv[]){
+  struct timeval now,next,diff,delay;
+  int success;
+  int z=0;
+  int q=0;
+  ubyte data[8];
+  data[0] = 4;
+  data[1] = 2;
+  data[2] = 1;
+  data[3] = 1;
+  data[4] = 1;
+  data[5] = 1;
+  data[6] = 130;
+  data[7] = 1;
+  // intialize USB device
+
+  success = initUSB();
+  
+  if ( !success ) {
+    printf ( "%s: error initializing USB interface\n" , ProgName );
+    return ( -1 );
+  }
+  for(int x=0; x < 60; x++){
+    address_value[x] = 1;
+  }
+  writeUSB(data,8);
+  data[2] = 1;
+  data[3] = 1;
+  data[4] = 1;
+  data[5] = 1;
+  data[6] = 1;
+  data[7] = 1;
+  writeUSB(data,8);
+  playSong(argv[1], 140.0);
+  exitUSB();
+  printf("done");
+  return 0;
 }
 
-void timeadd(struct timeval *res, struct timeval *a, struct timeval *b) 
-{
-    res->tv_usec=a->tv_usec+b->tv_usec;
-    res->tv_sec=a->tv_sec+b->tv_sec;
-    while (res->tv_usec >= 1000000) {
-	res->tv_usec-=1000000;
-	res->tv_sec++;
-    }
-}
