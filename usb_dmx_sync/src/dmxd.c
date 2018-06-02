@@ -319,44 +319,49 @@ void set(int q){
 	dmxSetValue(q,130);
 }
 
-void playSong(const char* songName, float bpm){
+void playSong(const char* songName = "", float set_bpm = 0.0){
   FILE* file = fopen(songName, "r");
-  float sixteenthNoteTime = 7.5;
-  float whatever = sixteenthNoteTime / bpm;
+  float sixteenthNoteTime = 7.5 * 5;
+  float whatever = sixteenthNoteTime / set_bpm;
+  float bpm = 140.0;
   clock_t t;
   float timeTaken = 0.0; 
   printf("song name: %s\n",songName);
   sixteenthNoteTime = whatever * 100000.0;
   t=clock();
+  printf("sixteen:%f\n", sixteenthNoteTime);
   int i = 0;
   fscanf(file, "%d", &i);
   while(!feof (file)){
     if(i){
       if(i < 0){
-	bpm = -1 * i;
-	sixteenthNoteTime = 7.5;
-        whatever = sixteenthNoteTime / bpm;
-        sixteenthNoteTime = whatever * 100000.0;
+          if(set_bpm == 0.0){
+	      //printf("here\n\n\n\n");
+	      bpm = -1 * i;
+   	      sixteenthNoteTime = 7.5;
+	      whatever = sixteenthNoteTime / bpm;
+              sixteenthNoteTime = whatever * 100000.0;
+	  }
       } else {
 	toggle(i);
       }
     } else {
       
       timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
-      printf("th: %f\n", timeTaken);
+      //printf("th: %f\n", timeTaken);
       sendDMX();
       
       timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
-      printf("ti: %f\n", timeTaken);
+      //printf("ti: %f\n", timeTaken);
       //usleep(sixteenthNoteTime);
       if(clock() - t < sixteenthNoteTime){
-	printf("before\n");
+	//printf("before\n");
       } else {
-	printf("after\n");
+	//printf("after\n");
       }
       while(clock() - t < sixteenthNoteTime){};
       timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
-      printf("time: %f\n", timeTaken);	
+      //printf("time: %f\n", timeTaken);	
       t = clock();
     }
     fscanf(file, "%d", &i);
@@ -371,6 +376,7 @@ int main(int argc, char *argv[]){
   int success;
   int z=0;
   int q=0;
+  float set_bpm;
   ubyte data[8];
   data[0] = 4;
   data[1] = 2;
@@ -399,7 +405,14 @@ int main(int argc, char *argv[]){
   data[6] = 1;
   data[7] = 1;
   writeUSB(data,8);
-  playSong(argv[1], 140.0);
+  set_bpm = 0.0;
+  if(argc > 1){
+    set_bpm = (float)atof(argv[2]);
+    //printf(argv[2]);
+    //printf("\n%f\n", (float)atof(argv[2]));
+    printf("set bpm to %f\n", set_bpm);
+  }
+  playSong(argv[1], set_bpm);
   exitUSB();
   printf("done");
   return 0;
