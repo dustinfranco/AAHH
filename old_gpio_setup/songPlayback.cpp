@@ -57,9 +57,6 @@ void playSong(const char* songName, float bpm){
 	FILE* file = fopen(songName, "r");
   float sixteenthNoteTime = 7.5;
   float whatever = sixteenthNoteTime / bpm;
-  printf("HEREaegaewgweag");
-  printf("\n%f\n", whatever);
-  printf("THEREaegaewgweag");
   sixteenthNoteTime = whatever * 1000000.0;
   printf("\n%f\n", sixteenthNoteTime);
   

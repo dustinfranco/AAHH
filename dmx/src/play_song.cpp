@@ -130,8 +130,7 @@ void playSong(const char* songName, float bpm){
 	toggle(i);
       }
     } else {	
-      set(59);			
-      countNegs++;
+      set(59);
       //usleep(sixteenthNoteTime);
       while(clock() - t < sixteenthNoteTime){};
       //timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
