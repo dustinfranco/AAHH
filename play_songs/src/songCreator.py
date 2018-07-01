@@ -6,7 +6,7 @@ from pinMeta import hardwareNumberTable;
 from subprocess import Popen, PIPE
 import pprint
 
-basePath = "/home/pi/Desktop/AAHH/Songs/"
+basePath = "../../Songs/"
 print (activePins)
 #basePath = "/Users/dustinfranco/Desktop/Songs/"
 if not os.path.exists(basePath):
@@ -47,18 +47,23 @@ def compileAllMeasures(songName):
 
 def compileMeasure(songName, measureName):
     print("compiling " + songName + " measure " + measureName)
+    measurePath = basePath + songName + "/" + measureName
+    print("measure path")
+    print(measurePath)
     measureString = open(basePath + songName + "/" + measureName)
     string = -1;
     noteArrayOutput = [];
     stringOffset = [0,5,10,15,20,25];
     for line in measureString:
         if(string == -1):
+            print(line)
             noteArrayOutput.append([int(line)]);
             noteArrayOutput[0].append(0);
         else:
             subindex = 0;
             for x in range(0,len(line)-1,2):
                 tempNote = line[x] + line[x+1];
+                print(tempNote)
                 if(string == 0):
                     if(tempNote != "||"):
                         noteArrayOutput.append([0]);
@@ -73,6 +78,7 @@ def compileMeasure(songName, measureName):
                     tempTempNote = hardwareNumberTable[activePins[tempTempNote]];
                     noteArrayOutput[subindex] = [tempTempNote] + noteArrayOutput[subindex];
                     noteArrayOutput[subindex + 1] = [tempTempNote] + noteArrayOutput[subindex + 1];
+                    print(noteArrayOutput)
                 if(tempNote != "||"):
                     subindex += 2
         string += 1;
@@ -234,44 +240,45 @@ def optomizeHardwareTimingTwo(inputNoteArray):
   return inputNoteArray
 
 
+
 def mainLoop():
-    userInput = input("(C)reate a new song (P)lay a song");
-    if(userInput == "c" or userInput == "C"):
         newSongName = input("What would you like to name the song?");
-        createNewSong(newSongName)
-    elif (userInput == "p" or userInput == "P"):
+        fullPath = basePath + newSongName
+        if not os.path.exists(fullPath + "/"):
+            print("creating song folder");
+            createNewSong(newSongName)
         songName = input("Which song would you like to play?");
         secondInput = input("Would you like to recompile the song?")
         hardwareInput = input("Attempt hardware optimization?") 
         splitInput = input("Song by fret?")
-        playAgain = "";
-        while(playAgain == "y" or playAgain == "Y" or playAgain == ""):
-            songPath = basePath + songName + "/compiledSections/temp" 
-            if(secondInput == "y"):
-                songAsMeasures = createArrayFromStructure(songName)
-                uniqueMeasures = findUniqueMeasures(songAsMeasures)
-                songAsNoteArray = []
-                for measure in uniqueMeasures:
-                    print(uniqueMeasures[measure])
-                    uniqueMeasures[measure] = compileMeasure(songName, measure);
-                for measure in songAsMeasures:
-                    z = uniqueMeasures[measure];
-                    b = copy.deepcopy(z)
-                    b = optomizeMeasure(b, 20);
-                    songAsNoteArray = concatMeasure(songAsNoteArray, b)
-                #pprint.pprint(songAsNoteArray)
-                if(hardwareInput == "y" or hardwareInput == "Y"):
-                    songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
-                    #songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
-                #pprint.pprint(songAsNoteArray)     
-                saveNoteArrayToFile(songAsNoteArray, songName)
-            cmd = ["/home/pi/Desktop/AAHH/dmx/src/play_song", songPath]
-            print(cmd)
-            print(songPath)
-            #return
-            #Popen(cmd, stdout = PIPE);
-            playAgain = input("play again?")
-    mainLoop();
+        
+        #songName = "beardscalp"
+        #secondInput = "y"
+        #hardwareInput = "y"
+        splitInput = "y"
+        songPath = fullPath + "/compiledSections/temp" 
+        if(secondInput == "y"):
+            songAsMeasures = createArrayFromStructure(songName)
+            print "song as measures"
+            print(songAsMeasures)
+            uniqueMeasures = findUniqueMeasures(songAsMeasures)
+            songAsNoteArray = []
+            for measure in uniqueMeasures:
+                print(uniqueMeasures[measure])
+                uniqueMeasures[measure] = compileMeasure(songName, measure);
+            for measure in songAsMeasures:
+                z = uniqueMeasures[measure];
+                b = copy.deepcopy(z)
+                b = optomizeMeasure(b, 20);
+                songAsNoteArray = concatMeasure(songAsNoteArray, b)
+            #pprint.pprint(songAsNoteArray)
+            if(hardwareInput == "y" or hardwareInput == "Y"):
+                songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
+                #songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
+            #pprint.pprint(songAsNoteArray)     
+            saveNoteArrayToFile(songAsNoteArray, songName)
+        playAgain = "n"
+
 
 
 
