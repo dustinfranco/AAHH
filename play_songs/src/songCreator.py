@@ -1,13 +1,12 @@
 import os
 import time
 import copy
-import GPIOSetup
 from pinMeta import activePins;
 from pinMeta import hardwareNumberTable;
 from subprocess import Popen, PIPE
 import pprint
 
-basePath = "/home/pi/Desktop/Songs/"
+basePath = "/home/pi/Desktop/AAHH/Songs/"
 print (activePins)
 #basePath = "/Users/dustinfranco/Desktop/Songs/"
 if not os.path.exists(basePath):
@@ -244,6 +243,7 @@ def mainLoop():
         songName = input("Which song would you like to play?");
         secondInput = input("Would you like to recompile the song?")
         hardwareInput = input("Attempt hardware optimization?") 
+        splitInput = input("Song by fret?")
         playAgain = "";
         while(playAgain == "y" or playAgain == "Y" or playAgain == ""):
             songPath = basePath + songName + "/compiledSections/temp" 
@@ -252,6 +252,7 @@ def mainLoop():
                 uniqueMeasures = findUniqueMeasures(songAsMeasures)
                 songAsNoteArray = []
                 for measure in uniqueMeasures:
+                    print(uniqueMeasures[measure])
                     uniqueMeasures[measure] = compileMeasure(songName, measure);
                 for measure in songAsMeasures:
                     z = uniqueMeasures[measure];
