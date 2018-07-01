@@ -111,10 +111,9 @@ def saveNoteArrayToFile(inputNoteArray, songName, sectionName = "temp", timeSign
     noteCount = 0;
     noteMax = 1 + timeSignature * 8;
     if(not os.path.exists(basePath + songName + "/compiledSections/" )):
-        print("creating that shit")
         os.makedirs(basePath + songName + "/compiledSections/" );
     else:
-        print("shit created")
+        print("song created")
     x = open(newFile, "w+");
     for subArray in inputNoteArray:
         for note in subArray:
@@ -136,10 +135,8 @@ def saveNoteArrayToFileTwo(inputNoteArray, songName, sectionName = "temp", timeS
     noteCount = 0;
     noteMax = 1 + timeSignature * 8;
     if(not os.path.exists(basePath + songName + "/compiledSections/" )):
-        print("creating that shit")
+        print("directory created")
         os.makedirs(basePath + songName + "/compiledSections/" );
-    else:
-        print("shit created")
     x = open(newFile, "w+");
     for subArray in inputNoteArray:
         for q in range (len(subArray), maxNotes):
