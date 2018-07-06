@@ -273,9 +273,9 @@ def singleFretAttemptTwo(fret):
         off = 18
 
     activePinsTemp = copy.deepcopy(activePins)
-    for m in range (0,5):
+    for m in range (0,6):
         activePins[m] = activePins[m+off]
-    for m in range (0,5):
+    for m in range (0,6):
         activePins[m+off] = activePinsTemp[m]
     print("before:")
     print(activePinsTemp)
