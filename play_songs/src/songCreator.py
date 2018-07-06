@@ -263,7 +263,24 @@ def singleFret(directory, fret):
             openFile.write(tempText)
             openFile.close()
 
+def singleFretAttemptTwo(fret):
+    off = 0
+    if(fret == "01"):
+        off = 6
+    elif(fret == "02"):
+        off = 12
+    elif(fret == "03"):
+        off = 18
 
+    activePinsTemp = activePins
+    for m in range (0,5):
+        activePins[m] = activePins[m+off]
+    for m in range (0,5):
+        activePins[m+off] = activePinsTemp[m]
+    print("before:")
+    print(activePinsTemp)
+    print("after:")
+    print(activePins)
 
 def compileSong():
     newSongName = input("What would you like to name the song?");
@@ -285,7 +302,7 @@ def compileSong():
         if(splitInput[0] == "y"):
             splitInput = input("which fret?")
             if(len(splitInput) == 2):
-                singleFret(fullPath, splitInput)
+                singleFretAttemptTwo(splitInput)
     songPath = fullPath + "/compiledSections/temp" 
     if(secondInput == "y"):
         songAsMeasures = createArrayFromStructure(songName)
