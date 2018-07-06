@@ -348,11 +348,10 @@ void playSong(const char* songName = "", float set_bpm = 0.0){
     } else {
       
       timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
-      //printf("th: %f\n", timeTaken);
       sendDMX();
       
-      timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
       //printf("ti: %f\n", timeTaken);
+      timeTaken = ((clock() - (double) t )) / CLOCKS_PER_SEC;
       //usleep(sixteenthNoteTime);
       if(clock() - t < sixteenthNoteTime){
 	//printf("before\n");
@@ -373,11 +372,14 @@ void playSong(const char* songName = "", float set_bpm = 0.0){
 
 int main(int argc, char *argv[]){
   struct timeval now,next,diff,delay;
+  float timeTaken = 0.0;
   int success;
   int z=0;
   int q=0;
   float set_bpm;
   ubyte data[8];
+  clock_t clock_song;
+  clock_song = clock();
   data[0] = 4;
   data[1] = 2;
   data[2] = 1;
@@ -412,8 +414,17 @@ int main(int argc, char *argv[]){
     //printf("\n%f\n", (float)atof(argv[2]));
     printf("set bpm to %f\n", set_bpm);
   }
+  
+  printf("time begin\n");
+  timeTaken = ((clock() - (double) clock_song )) / CLOCKS_PER_SEC;
+  printf("%f\n", timeTaken);
   playSong(argv[1], set_bpm);
+  printf("end");
+  timeTaken = ((clock() - (double) clock_song )) / CLOCKS_PER_SEC;
+  
+  printf("%f\n", timeTaken);
   exitUSB();
+  
   printf("done");
   return 0;
 }
