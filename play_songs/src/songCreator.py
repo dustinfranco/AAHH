@@ -46,24 +46,24 @@ def compileAllMeasures(songName):
     print("compile all mesures not complete")
 
 def compileMeasure(songName, measureName):
-    print("compiling " + songName + " measure " + measureName)
+    #print("compiling " + songName + " measure " + measureName)
     measurePath = basePath + songName + "/" + measureName
-    print("measure path")
-    print(measurePath)
+    #print("measure path")
+    #print(measurePath)
     measureString = open(basePath + songName + "/" + measureName)
     string = -1;
     noteArrayOutput = [];
     stringOffset = [0,5,10,15,20,25];
     for line in measureString:
         if(string == -1):
-            print(line)
+            #print(line)
             noteArrayOutput.append([int(line)]);
             noteArrayOutput[0].append(0);
         else:
             subindex = 0;
             for x in range(0,len(line)-1,2):
                 tempNote = line[x] + line[x+1];
-                print(tempNote)
+                #print(tempNote)
                 if(string == 0):
                     if(tempNote != "||"):
                         noteArrayOutput.append([0]);
@@ -78,7 +78,7 @@ def compileMeasure(songName, measureName):
                     tempTempNote = hardwareNumberTable[activePins[tempTempNote]];
                     noteArrayOutput[subindex] = [tempTempNote] + noteArrayOutput[subindex];
                     noteArrayOutput[subindex + 1] = [tempTempNote] + noteArrayOutput[subindex + 1];
-                    print(noteArrayOutput)
+                    #print(noteArrayOutput)
                 if(tempNote != "||"):
                     subindex += 2
         string += 1;
@@ -240,48 +240,78 @@ def optomizeHardwareTimingTwo(inputNoteArray):
   return inputNoteArray
 
 
-
-def mainLoop():
-        newSongName = input("What would you like to name the song?");
-        fullPath = basePath + newSongName
-        if not os.path.exists(fullPath + "/"):
-            print("creating song folder");
-            createNewSong(newSongName)
-        songName = input("Which song would you like to play?");
-        secondInput = input("Would you like to recompile the song?")
-        hardwareInput = input("Attempt hardware optimization?") 
-        splitInput = input("Song by fret?")
-        
-        #songName = "beardscalp"
-        #secondInput = "y"
-        #hardwareInput = "y"
-        splitInput = "y"
-        songPath = fullPath + "/compiledSections/temp" 
-        if(secondInput == "y"):
-            songAsMeasures = createArrayFromStructure(songName)
-            print "song as measures"
-            print(songAsMeasures)
-            uniqueMeasures = findUniqueMeasures(songAsMeasures)
-            songAsNoteArray = []
-            for measure in uniqueMeasures:
-                print(uniqueMeasures[measure])
-                uniqueMeasures[measure] = compileMeasure(songName, measure);
-            for measure in songAsMeasures:
-                z = uniqueMeasures[measure];
-                b = copy.deepcopy(z)
-                b = optomizeMeasure(b, 20);
-                songAsNoteArray = concatMeasure(songAsNoteArray, b)
-            #pprint.pprint(songAsNoteArray)
-            if(hardwareInput == "y" or hardwareInput == "Y"):
-                songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
-                #songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
-            #pprint.pprint(songAsNoteArray)     
-            saveNoteArrayToFile(songAsNoteArray, songName)
-        playAgain = "n"
+def singleFret(directory, fret):
+    print("temporary folder");
+    fileList = os.listdir(directory)
+    for f in fileList:
+        if(f != "songSequence" and 
+           f!=".DS_store" and 
+           f!= "compiledSections" and
+	       f!= "clicks"):
+            openFile = open(directory + "/" + f, "r")
+            tempText = openFile.read()
+            tempText = tempText.replace(fret, "zz")
+            tempText = tempText.replace("00", "--")
+            tempText = tempText.replace("01", "--")
+            tempText = tempText.replace("02", "--")
+            tempText = tempText.replace("03", "--")
+            tempText = tempText.replace("zz", "00")
+            openFile.close()
+            print(directory + "/" + f )
+            print(tempText)
+            openFile = open(directory + "/" + f , "w+")
+            openFile.write(tempText)
+            openFile.close()
 
 
 
+def compileSong():
+    newSongName = input("What would you like to name the song?");
+    fullPath = basePath + newSongName
+    if not os.path.exists(fullPath + "/"):
+        print("creating song folder");
+        createNewSong(newSongName)
+    songName = newSongName #lol lazy
+    #secondInput = input("Would you like to recompile the song?")
+    #hardwareInput = input("Attempt hardware optimization?") 
+    #splitInput = input("Song by fret?")
+    
+    #songName = "beardscalp"
+    secondInput = "y"
+    hardwareInput = "y"
+    splitInput = "y"
+    if(splitInput[0] == "y"):
+        splitInput = input("are you sure you want to permanently change " + songName + "?")
+        if(splitInput[0] == "y"):
+            splitInput = input("which fret?")
+            if(len(splitInput) == 2):
+                singleFret(fullPath, splitInput)
+    songPath = fullPath + "/compiledSections/temp" 
+    if(secondInput == "y"):
+        songAsMeasures = createArrayFromStructure(songName)
+        #print "song as measures"
+        #print(songAsMeasures)
+        uniqueMeasures = findUniqueMeasures(songAsMeasures)
+        #print(uniqueMeasures)
+        songAsNoteArray = []
+        for measure in uniqueMeasures:
+            #print(uniqueMeasures[measure])
+            uniqueMeasures[measure] = compileMeasure(songName, measure);
+        for measure in songAsMeasures:
+            z = uniqueMeasures[measure];
+            b = copy.deepcopy(z)
+            b = optomizeMeasure(b, 20);
+            songAsNoteArray = concatMeasure(songAsNoteArray, b)
+        #pprint.pprint(songAsNoteArray)
+        if(hardwareInput == "y" or hardwareInput == "Y"):
+            songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
+            #songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
+        #pprint.pprint(songAsNoteArray)     
+        saveNoteArrayToFile(songAsNoteArray, songName)
 
-mainLoop()
+
+
+
+compileSong()
     
     
