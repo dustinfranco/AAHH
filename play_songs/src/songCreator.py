@@ -133,12 +133,7 @@ def saveNoteArrayToFile(inputNoteArray, songName, sectionName = "temp", timeSign
             if(note != 0):
                 x.write(str(note) + " ")
             else:
-                noteCount +=1
                 x.write("0" + "\n")
-                if(noteCount == noteMax):
-                    noteCount = 0;
-                    x.write("\r\n")
-
 
 def saveNoteArrayToFileTwo(inputNoteArray, songName, sectionName = "temp", timeSignature = 4):
     newFile = basePath + songName + "/compiledSections/" + sectionName
