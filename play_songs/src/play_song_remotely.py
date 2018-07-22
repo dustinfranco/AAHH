@@ -11,6 +11,17 @@ source = environ["LOCAL_AAHH"]
 dest = environ["PI_AAHH"]
 port = int(environ["PI_PORT"])
 
+def remote_command(cmd):
+    print("remote exec: {}".format(cmd))
+    stdin, stdout, stderr = t.exec_command(cmd)
+    if(stderr):
+        print("STDERR:")
+        print("".join(stderr.readlines()))
+    print("STDOUT:")
+    print("".join(stdout.readlines()))
+    print("finished making dmxd.c successfully")
+
+
 if len(argv) < 2:
     print("need to pass in an argument, 'h' for help")
     exit()
@@ -30,7 +41,9 @@ if(argv[1][0] == "h"):
     print "\n"
     exit()
 
+
 try:
+    songname = argv[1]
     #ssh
     t = paramiko.client.SSHClient()
     t.set_missing_host_key_policy(paramiko.client.WarningPolicy)
@@ -52,6 +65,7 @@ try:
     else:
         cmd = "sudo python {}/play_songs/src/songCreator.py {}".format(source, args_as_string)
         call(cmd.split())
+
     
 
 
@@ -66,15 +80,7 @@ try:
             dest + "/play_songs/src/dmxd.c"
         )
         cmd = "make -C {}/play_songs/src/".format(dest) 
-        print(cmd)
-        stdin, stdout, stderr = t.exec_command(cmd)
-        if(stderr):
-            print("STDERR:")
-            print("".join(stderr.readlines()))
-        print("STDOUT:")
-        print("".join(stdout.readlines()))
-        print("finished making dmxd.c successfully")
-
+        remote_command(cmd)
 except Exception as e:
     print(sys.exc_info())
 
