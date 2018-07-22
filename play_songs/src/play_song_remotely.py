@@ -33,9 +33,10 @@ if(argv[1][0] == "h"):
     print "first argument should be song name"
     print "-dm to disable 'remake dmxd.o and scp it'"
     print "-drc to disable recompiling the song"
+    print("-debug_song to print debug statements in song creator")
+    
     #not implemented:
     print "-dhw to disable hardware optimization"
-    print("-debug_song to print debug statements in song creator")
     print "-debug_dmxd to print debug statements in dmxd.o when it runs"
     print "-bpm (number) to set static bpm"
     print "\n"
