@@ -5,6 +5,14 @@ from pinMeta import activePins;
 from pinMeta import hardwareNumberTable;
 from subprocess import Popen, PIPE
 import pprint
+from sys import argv
+import logging as log
+logger = log.getLogger(__name__)
+if("-debug_song" in argv):
+    logger.setLevel(log.DEBUG)
+else:
+    logger.setLevel(log.WARN)
+    
 
 basePath = "../../Songs/"
 print (activePins)
@@ -283,51 +291,46 @@ def singleFretAttemptTwo(fret):
     print(activePins)
 
 def compileSong():
-    newSongName = input("What would you like to name the song?");
+    debug = "-debug_song" in argv
+    newSongName = argv[1]
     fullPath = basePath + newSongName
     if not os.path.exists(fullPath + "/"):
         print("creating song folder");
         createNewSong(newSongName)
     songName = newSongName #lol lazy
-    #secondInput = input("Would you like to recompile the song?")
-    #hardwareInput = input("Attempt hardware optimization?") 
-    #splitInput = input("Song by fret?")
-    
-    #songName = "beardscalp"
-    secondInput = "y"
-    hardwareInput = "y"
-    splitInput = "y"
-    if(splitInput[0] == "y"):
+    hardwareInput = not "-dhw" in argv
+
+    #split input is just not going to happen right now
+    splitInput = False
+    if(splitInput):
         splitInput = input("are you sure you want to permanently change " + songName + "?")
         if(splitInput[0] == "y"):
             splitInput = input("which fret?")
             if(len(splitInput) == 2):
                 singleFretAttemptTwo(splitInput)
+
     songPath = fullPath + "/compiledSections/temp" 
-    if(secondInput == "y"):
-        songAsMeasures = createArrayFromStructure(songName)
-        #print "song as measures"
-        #print(songAsMeasures)
-        uniqueMeasures = findUniqueMeasures(songAsMeasures)
-        #print(uniqueMeasures)
-        songAsNoteArray = []
-        for measure in uniqueMeasures:
-            #print(uniqueMeasures[measure])
-            uniqueMeasures[measure] = compileMeasure(songName, measure);
-        for measure in songAsMeasures:
-            z = uniqueMeasures[measure];
-            b = copy.deepcopy(z)
-            b = optomizeMeasure(b, 20);
-            songAsNoteArray = concatMeasure(songAsNoteArray, b)
-        #pprint.pprint(songAsNoteArray)
-        if(hardwareInput == "y" or hardwareInput == "Y"):
-            songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
-            #songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
-        #pprint.pprint(songAsNoteArray)     
-        saveNoteArrayToFile(songAsNoteArray, songName)
-
-
-
+    songAsMeasures = createArrayFromStructure(songName)
+    #print "song as measures"
+    #print(songAsMeasures)
+    uniqueMeasures = findUniqueMeasures(songAsMeasures)
+    #print(uniqueMeasures)
+    songAsNoteArray = []
+    for measure in uniqueMeasures:
+        #print(uniqueMeasures[measure])
+        uniqueMeasures[measure] = compileMeasure(songName, measure);
+    for measure in songAsMeasures:
+        z = uniqueMeasures[measure];
+        b = copy.deepcopy(z)
+        b = optomizeMeasure(b, 20);
+        songAsNoteArray = concatMeasure(songAsNoteArray, b)
+    #pprint.pprint(songAsNoteArray)
+    if(hardwareInput):
+        print("making hardware optimization")
+        songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
+        #songAsNoteArray =  optomizeHardwareTimingTwo(songAsNoteArray)
+    #pprint.pprint(songAsNoteArray)     
+    saveNoteArrayToFile(songAsNoteArray, songName)
 
 compileSong()
     
