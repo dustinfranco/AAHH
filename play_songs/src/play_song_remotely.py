@@ -11,15 +11,17 @@ source = environ["LOCAL_AAHH"]
 dest = environ["PI_AAHH"]
 port = int(environ["PI_PORT"])
 
-def remote_command(ssh, cmd):
+def remote_command(ssh, cmd, blocking = True):
     print("remote exec: {}".format(cmd))
     stdin, stdout, stderr = ssh.exec_command(cmd)
+    stdout.channel.recv_exit_status()
+
+
     if(stderr):
         print("STDERR:")
         print("".join(stderr.readlines()))
     print("STDOUT:")
     print("".join(stdout.readlines()))
-    print("finished making dmxd.c successfully")
 
 
 if len(argv) < 2:
@@ -31,14 +33,15 @@ if(argv[1][0] == "h"):
     #implemented:
     print "HOW TO USE PLAY REMOTELY:"
     print "first argument should be song name"
-    print "-dm to disable 'remake dmxd.o and scp it'"
+    print "-dm to disable 'remake local dmxd.bin on pi"
     print "-drc to disable recompiling the song"
     print("-debug_song to print debug statements in song creator")
-    
+
     #not implemented:
     print "-dhw to disable hardware optimization"
-    print "-debug_dmxd to print debug statements in dmxd.o when it runs"
+    print "-debug_dmxd to print debug statements in dmxd.bin when it runs"
     print "-bpm (number) to set static bpm"
+    print "-ps to print song"
     print "\n"
     exit()
 
@@ -76,7 +79,7 @@ try:
 
     #recompile dmxd.o (on pi):
     if "-dm" in argv:
-        print("not remaking dmxd.o")
+        print("not remaking dmxd.bin")
     else:
         tsftp.put(
             source + "/play_songs/src/dmxd.c",
@@ -84,6 +87,12 @@ try:
         )
         cmd = "make -C {}/play_songs/src/".format(dest) 
         remote_command(t, cmd)
+    
+    #play the song:
+    cmd = "sudo {}play_songs/daemon/dmxd.bin {}Songs/{}/compiledSections/temp 120.0".format(dest,dest,songname) 
+    remote_command(t, cmd)
+
+
 except Exception as e:
     print(sys.exc_info())
 
