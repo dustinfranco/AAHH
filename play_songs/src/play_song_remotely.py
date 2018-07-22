@@ -25,18 +25,11 @@ if(argv[1][0] == "h"):
     print "\n"
     exit()
 
-
 try:
     t = paramiko.Transport((hostname, port))
     t.connect(username=username, password=password)
     sftp = paramiko.SFTPClient.from_transport(t)
-    if not -dm in argv:
-        print("remake dmxd disabled")
-    else:
-        print("remaking dmxd.o...")
-        sys.
     sftp.put(source, dest)
-
 
 except Exception as e:
     print(e)
