@@ -1,15 +1,17 @@
 from subprocess import call
 from os import environ
 from sys import argv
+import config as cf
 import sys
 import paramiko
-
-hostname = environ["PI_HOSTNAME"]
-username = environ["PI_USERNAME"]
-password = environ["PI_PASSWORD"]
-source = environ["LOCAL_AAHH"]
-dest = environ["PI_AAHH"]
-port = int(environ["PI_PORT"])
+print("environment variables:")
+print environ
+hostname = cf.piip
+username = cf.username
+password = cf.pipw
+source = cf.local_AAHH
+dest = cf.pi_AAHH
+port = int(cf.pi_port)
 
 def remote_command(ssh, cmd, blocking = True):
     print("remote exec: {}".format(cmd))
