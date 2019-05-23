@@ -1,1 +1,1 @@
-songs_dir = "/Users/dustinfranco/projects/AAHH/Songs/"
+songs_dir = "/home/pi//AAHH/Songs/"

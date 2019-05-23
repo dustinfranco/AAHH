@@ -22,11 +22,12 @@ def file_to_section(target_dir, section_name):
     temp_line = temp_line.replace("|","")
     lines.append(temp_line)
   for m in range(0,len(lines[0])):
-    for x in range(0,6):
-      temp_note = lines[x][m]
-      if(temp_note != '-'):
-        section_out += nc[strings[x] + temp_note]
-    section_out += "\n"
+    for q in range(0,2):
+      for x in range(0,6):
+        temp_note = lines[x][m]
+        if(temp_note != '-'):
+          section_out += nc[strings[x] + temp_note]
+      section_out += "\n"
   return section_out
 
 def create_unique_dictionary(target_dir, SSA):
