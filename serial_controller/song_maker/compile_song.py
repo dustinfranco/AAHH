@@ -1,6 +1,21 @@
 from misc_config import songs_dir as sd
 from note_config import note_config as nc
+import pprint
 import os
+
+UNUSED_NOTE_TRACKER = [
+  "E0","A0","G0","D0","B0","e0",
+  "E1","A1","G1","D1","B1","e1",
+  "E2","A2","G2","D2", "B2","e2",
+  "E3","A3","G3","D3","B3","e3",
+  "E4","A4","G4","D4","B4","e4",
+]
+
+NOTE_USES = {}
+for note in UNUSED_NOTE_TRACKER:
+  NOTE_USES[note] = 0
+
+
 
 def create_song_sequence_array(song_dir):
   sequence_string = open(song_dir + "song_sequence", "r").read()
@@ -26,7 +41,13 @@ def file_to_section(target_dir, section_name):
       for x in range(0,6):
         temp_note = lines[x][m]
         if(temp_note != '-'):
-          section_out += nc[strings[x] + temp_note]
+          temp_note = strings[x] + temp_note
+          #print " NOTE : " + temp_note
+          if (temp_note in UNUSED_NOTE_TRACKER):
+            print "removing " + temp_note
+            UNUSED_NOTE_TRACKER.remove(temp_note)
+          NOTE_USES[temp_note] += 1
+          section_out += nc[temp_note]
       section_out += "\n"
   return section_out
 
@@ -58,10 +79,14 @@ def compile_song(song_name = None):
   target_dir = sd + song_name + "/"
   SSA = create_song_sequence_array(target_dir)
   USD = create_unique_dictionary(target_dir, SSA)
-  print USD
+  #print USD
   complete_song = create_song(SSA, USD)
-  print complete_song
+  #print complete_song
+  print "this is pretty?"
+  pprint.pprint(UNUSED_NOTE_TRACKER)
+  pprint.pprint(NOTE_USES)
   save_song(target_dir, complete_song)
 
 if __name__ == "__main__":
-  compile_song("allnotes")
+  #compile_song("allnotes")
+  compile_song("beardscalp_conv")
