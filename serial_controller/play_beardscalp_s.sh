@@ -1,7 +1,6 @@
 screen -d -m -S test /dev/ttyACM0 115200
-input="/home/pi/AAHH/Songs/$1/compiled_song"
+input="/home/pi/AAHH/Songs/beardscalp_conv/compiled_song"
 tempo=0
-screen -S test -X stuff "echo r"
 echo "${input:0:1}"
 while IFS= read -r line
 do
@@ -15,6 +14,7 @@ do
     sleep $tempo
   fi
 done < "$input"
-screen -S test -X stuff "echo r"
+
+screen -S test -X stuff "echo 123"
 
 

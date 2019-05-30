@@ -31,6 +31,7 @@ def file_to_section(target_dir, section_name):
   SAT = open(target_dir + section_name, "r")
   strings = ["E", "A", "D", "G", "B", "e"]
   lines = []
+  #for old files
   for x in range (0,6):
     temp_line = SAT.readline()
     temp_line = temp_line.replace("\n","")
@@ -88,5 +89,5 @@ def compile_song(song_name = None):
   save_song(target_dir, complete_song)
 
 if __name__ == "__main__":
-  #compile_song("allnotes")
   compile_song("beardscalp_conv")
+  compile_song("allnotes_2")
