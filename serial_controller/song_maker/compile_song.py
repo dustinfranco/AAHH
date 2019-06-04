@@ -2,6 +2,8 @@ from misc_config import songs_dir as sd
 from note_config import note_config as nc
 import pprint
 import os
+import sys
+print sys.argv
 
 UNUSED_NOTE_TRACKER = [
   "E0","A0","G0","D0","B0","e0",
@@ -47,7 +49,12 @@ def file_to_section(target_dir, section_name):
           if (temp_note in UNUSED_NOTE_TRACKER):
             print "removing " + temp_note
             UNUSED_NOTE_TRACKER.remove(temp_note)
-          NOTE_USES[temp_note] += 1
+          try:
+            NOTE_USES[temp_note] += 1
+          except Exception as e:
+            pass
+          print temp_note
+          print nc
           section_out += nc[temp_note]
       section_out += "\n"
   return section_out
@@ -87,7 +94,6 @@ def compile_song(song_name = None):
   pprint.pprint(UNUSED_NOTE_TRACKER)
   pprint.pprint(NOTE_USES)
   save_song(target_dir, complete_song)
-
-if __name__ == "__main__":
-  compile_song("beardscalp_conv")
-  compile_song("allnotes_2")
+compile_song(sys.argv[1])
+#if __name__ == "__main__":
+#  compile_song(sys.argv[1])
