@@ -13,6 +13,8 @@ UNUSED_NOTE_TRACKER = [
   "E4","A4","G4","D4","B4","e4",
 ]
 
+METRONOME_NOTE = "D1"
+
 NOTE_USES = {}
 for note in UNUSED_NOTE_TRACKER:
   NOTE_USES[note] = 0
@@ -28,6 +30,7 @@ def create_song_sequence_array(song_dir):
   return sequence_array
 
 def file_to_section(target_dir, section_name):
+  metronome = 2
   section_out = ""
   #section as tab:
   SAT = open(target_dir + section_name, "r")
@@ -56,6 +59,9 @@ def file_to_section(target_dir, section_name):
           print temp_note
           print nc
           section_out += nc[temp_note]
+      if (METRONOME_NOTE and metronome):
+        section_out += nc[METRONOME_NOTE]
+        metronome -= 1
       section_out += "\n"
   return section_out
 
@@ -74,7 +80,7 @@ def create_song(SSA, USD):
   for section in SSA:
     if section[0] == "-":
       #calculate BPM change
-      SAS += str(30.0/int(section)) + "\n"
+      SAS += str((60.0)/(int(section) * 32)) + "\n"
     else:
       SAS += USD[section]
   return SAS
